@@ -37,7 +37,7 @@ class ROVwinch:
         )
 
         Thread(daemon=True, target=self.winch.monitorCurrent).start()
-        Thread(daemon=True, target=self.winch.rotationTrackingReedSw()).start()
+        Thread(daemon=True, target=self.winch.rotationTrackingReedSw).start()
 
         self.heartbeat = DigitalInOut(board.D13)
         self.heartbeat.direction = Direction.OUTPUT

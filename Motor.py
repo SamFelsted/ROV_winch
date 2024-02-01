@@ -7,7 +7,6 @@ import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
 from gpiozero import AngularServo
 from gpiozero.pins.pigpio import PiGPIOFactory
-from threading import Thread
 
 import const
 import util
@@ -117,7 +116,7 @@ class Motor:
 
                 vs = '%.2f' % self.motorVoltage
                 cs = '%.2f' % self.motorCurrent
-                print(vs, "V ; ", cs, "A")
+                # print(vs, "V ; ", cs, "A")
 
                 if abs(self.motorCurrent) > self.current_limit:
                     avgCurrent = self.motorCurrent
