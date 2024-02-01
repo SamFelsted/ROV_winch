@@ -5,11 +5,6 @@
 import const
 
 
-def getUserInput():
-    in_strings = input('Input (<COMMAND> <VALUE>) : ')
-    return in_strings.split()
-
-
 def clamp(x, low, high):
     """
     Cuts input lower or higher than max or min

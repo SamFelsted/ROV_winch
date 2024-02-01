@@ -38,10 +38,12 @@ class ROVwinch:
 
         Thread(daemon=True, target=self.winch.monitorCurrent).start()
         Thread(daemon=True, target=self.winch.rotationReadSwitchTracking).start()
-        Thread(daemon=True, target=self.autoMove).start()
+        Thread(daemon=True, target=self.getCommand).start()
 
         self.heartbeat = DigitalInOut(board.D13)
         self.heartbeat.direction = Direction.OUTPUT
+
+        self.commandToRun = ""
 
         if mode == 'debug':
             print('COMMAND OPTIONS:')
@@ -62,12 +64,6 @@ class ROVwinch:
                     self.heartbeat.value = 1
 
         print("initialized")
-
-    def autoMove(self):
-        while True:
-            if self.winch.NeedToMoveActuator:
-                self.windActuator.moveCableDistance()
-                self.winch.NeedToMoveActuator = False
 
     def handleInput(self, commandInput):
         if commandInput[0] == "ROF":
@@ -102,58 +98,59 @@ class ROVwinch:
             self.winch.current_limit = float(commandInput[1])
             return "INFO Current limit updated.\r\n"
 
-            # undefined user input
-        elif commandInput[0] == "N/A":
-            return "ROT " + str(self.winch.rotations) + "\r\n"
-
         else:
             return "INFO invalid input.\r\n"
 
-    def control_winch(self):
+    def getCommand(self):
         while True:
-            in_strings = self.getCommand()
-
-            if self.winch.NeedToMoveActuator:
-                print("One rotation")
-
             try:
-                out_string = self.handleInput(in_strings)
-                # serial write encoder position & velocity
-                if self.mode == 'debug':
-                    if out_string != "INFO invalid input.\r\n":
-                        print(out_string)
+                if self.mode != 'debug':
+                    serial_in = self.uart0.readline()
+                    in_decoded = serial_in.decode('UTF-8')
+                    in_strings = in_decoded.split()
+                    if not in_strings:
+                        return ['N/A']
+                    # print(in_strings)
+                    self.commandToRun = in_strings
                 else:
-                    try:
-                        self.uart0.write(bytes(out_string, 'UTF-8'))
-                        if out_string.split()[0] == "INFO":
-                            print(out_string)
-                    except Exception:
-                        print("error sending serial output")
-
-                self.heartbeat.value = not self.heartbeat.value  # toggle LED
+                    in_strings = input('Input (<COMMAND> <VALUE>) : ')
+                    self.commandToRun = in_strings.split()
 
             except Exception:
-                print("Exception raised. Turning off winch ... ")
-                self.turnOffWinchSystem()
-                print(traceback.format_exc())
+                print("Error input")
+                return ['N/A']
+
+    def control_winch(self):
+        while True:
+
+            if self.winch.NeedToMoveActuator:
+                self.windActuator.moveCableDistance()
+                self.winch.NeedToMoveActuator = False
+
+            if self.commandToRun != "":
+                try:
+                    out_string = self.handleInput(self.commandToRun)
+                    # serial write encoder position & velocity
+                    if self.mode == 'debug':
+                        if out_string != "INFO invalid input.\r\n":
+                            print(out_string)
+                    else:
+                        try:
+                            self.uart0.write(bytes(out_string, 'UTF-8'))
+                            if out_string.split()[0] == "INFO":
+                                print(out_string)
+                        except Exception:
+                            print("error sending serial output")
+
+                    self.heartbeat.value = not self.heartbeat.value  # toggle LED
+
+                except Exception:
+                    print("Exception raised. Turning off winch ... ")
+                    self.turnOffWinchSystem()
+                    print(traceback.format_exc())
+
+                self.commandToRun = ""
 
     def turnOffWinchSystem(self):
         self.winch.off()
         self.windActuator.setSpeed(0)
-
-    def getCommand(self):
-        try:
-            if self.mode != 'debug':
-                serial_in = self.uart0.readline()
-                in_decoded = serial_in.decode('UTF-8')
-                in_strings = in_decoded.split()
-                if not in_strings:
-                    return ['N/A']
-                # print(in_strings)
-                return in_strings
-            else:
-                return util.getUserInput()
-            
-        except Exception:
-            print("Error input")
-            return ['N/A']
