@@ -9,7 +9,8 @@ class Motor:
     RETRACT = 1
     EXTEND = 0
 
-    currentLimit = 2
+    voltageDivider = (100 + 47) / 100
+    currentLimit = 15
 
 
 class Actuator:

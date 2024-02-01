@@ -9,6 +9,7 @@ from gpiozero import AngularServo
 from gpiozero.pins.pigpio import PiGPIOFactory
 from threading import Thread
 
+import const
 import util
 
 factory = PiGPIOFactory()
@@ -39,6 +40,7 @@ class Motor:
 
         self.i2c = busio.I2C(board.SCL, board.SDA)
         self.current_sensor = ADS.ADS1115(self.i2c, address=0x48)
+        self.ADCRead = AnalogIn(self.current_sensor, ADS.P0)
         self.current_limit = currentLimit
 
         # rotation tracking for spool
@@ -48,6 +50,10 @@ class Motor:
         self.last_reed_time = time.time() - false_pulse_delay_reed_sw
         self.NeedToMoveActuator = False
         self.RotationCounter = 0
+
+        # Logged values
+        self.motorVoltage = self.ADCRead.voltage
+        self.motorCurrent = (-10 * self.motorVoltage * const.Motor.voltageDivider + 25)
 
     def set(self, speed, direction):
 
@@ -96,26 +102,31 @@ class Motor:
                 prior_count = curr_count
             time.sleep(0.1)
 
-    def monitorCurrent(self):
-        # Measure current draw of motor. Shut off if above threshold
-        voltage_divider = (100 + 47) / 100
+    def readCurrentAndVoltage(self):
+        motorVoltage = self.ADCRead.voltage
+        motorCurrent = (-10 * self.motorVoltage * const.Motor.voltageDivider + 25)
+        return motorCurrent, motorVoltage
 
+    def monitorCurrent(self):
+        """
+        Monitors the current of the motor, shuts off motor if above threshold in const
+        """
         while True:
             if self.ON.value == 1:
-                ADCread = AnalogIn(self.current_sensor, ADS.P0)
-                volty = ADCread.voltage
-                curry = (-10 * volty * voltage_divider + 25)
-                vs = '%.2f' % volty
-                cs = '%.2f' % curry
+
+                self.motorVoltage, self.motorCurrent = self.readCurrentAndVoltage()
+
+                vs = '%.2f' % self.motorVoltage
+                cs = '%.2f' % self.motorVoltage
                 print(vs, "V ; ", cs, "A")
 
-                if abs(curry) > self.current_limit:
+                if abs(self.motorCurrent) > self.current_limit:
+                    avgCurrent = self.motorCurrent
                     for i in range(4):  # double check before shutoff -- take an average over 50 ms
                         time.sleep(0.01)
-                        ADCread = AnalogIn(self.current_sensor, ADS.P0)
-                        volty = ADCread.voltage
-                        curry = curry - 10 * volty * voltage_divider + 25
-                    curry = curry / (i + 2)
-                    if abs(curry) > self.current_limit:
+                        voltage, current = self.readCurrentAndVoltage()
+                        avgCurrent = (avgCurrent + current) / 2
+
+                    if abs(avgCurrent) > self.current_limit:
                         self.off()
-                        print("HIGH CURRENT (", str(curry), "A ) DETECTED! shutting off motor...")
+                        print("HIGH CURRENT (", str(self.motorCurrent), "A ) DETECTED! shutting off motor...")
