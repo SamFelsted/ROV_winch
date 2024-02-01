@@ -9,7 +9,7 @@ class Motor:
     RETRACT = 1
     EXTEND = 0
 
-    currentLimit = 15
+    currentLimit = 2
 
 
 class Actuator:

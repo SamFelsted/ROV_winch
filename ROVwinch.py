@@ -35,6 +35,8 @@ class ROVwinch:
             direction_pin=const.Actuator.Pins.directionPin,
             feedback_pin=const.Actuator.Pins.feedbackPin,
         )
+        Thread(daemon=True, target=self.winch.monitorCurrent).start()
+
         self.heartbeat = DigitalInOut(board.D13)
         self.heartbeat.direction = Direction.OUTPUT
 
@@ -57,7 +59,6 @@ class ROVwinch:
                     self.heartbeat.value = 1
 
         print("initialized")
-
 
     def handleInput(self, commandInput):
         if commandInput[0] == "ROF":
@@ -142,6 +143,7 @@ class ROVwinch:
                 return in_strings
             else:
                 return util.getUserInput()
+            
         except Exception:
             print("Error input")
             return ['N/A']

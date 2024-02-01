@@ -107,7 +107,7 @@ class Motor:
                 curry = (-10 * volty * voltage_divider + 25)
                 vs = '%.2f' % volty
                 cs = '%.2f' % curry
-                # print(vs, "V ; ", cs, "A")
+                print(vs, "V ; ", cs, "A")
 
                 if abs(curry) > self.current_limit:
                     for i in range(4):  # double check before shutoff -- take an average over 50 ms
@@ -117,6 +117,5 @@ class Motor:
                         curry = curry - 10 * volty * voltage_divider + 25
                     curry = curry / (i + 2)
                     if abs(curry) > self.current_limit:
-                        self.ON.value = 0
-                        self.set(0)
+                        self.off()
                         print("HIGH CURRENT (", str(curry), "A ) DETECTED! shutting off motor...")
