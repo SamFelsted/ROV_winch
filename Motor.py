@@ -40,7 +40,6 @@ class Motor:
 
         self.i2c = busio.I2C(board.SCL, board.SDA)
         self.current_sensor = ADS.ADS1115(self.i2c, address=0x48)
-        self.ADCRead = AnalogIn(self.current_sensor, ADS.P0)
         self.current_limit = currentLimit
 
         # rotation tracking for spool
@@ -52,8 +51,8 @@ class Motor:
         self.RotationCounter = 0
 
         # Logged values
-        self.motorVoltage = self.ADCRead.voltage
-        self.motorCurrent = (-10 * self.motorVoltage * const.Motor.voltageDivider + 25)
+        self.motorVoltage = 0
+        self.motorCurrent = 0
 
     def set(self, speed, direction):
 
@@ -102,10 +101,11 @@ class Motor:
                 prior_count = curr_count
             time.sleep(0.1)
 
-    def readCurrentAndVoltage(self):
-        motorVoltage = self.ADCRead.voltage
+    def readVoltageAndCurrent(self):
+        ADCRead = AnalogIn(self.current_sensor, ADS.P0)
+        motorVoltage = ADCRead.voltage
         motorCurrent = (-10 * self.motorVoltage * const.Motor.voltageDivider + 25)
-        return motorCurrent, motorVoltage
+        return motorVoltage, motorCurrent
 
     def monitorCurrent(self):
         """
@@ -114,17 +114,17 @@ class Motor:
         while True:
             if self.ON.value == 1:
 
-                self.motorVoltage, self.motorCurrent = self.readCurrentAndVoltage()
+                self.motorVoltage, self.motorCurrent = self.readVoltageAndCurrent()
 
                 vs = '%.2f' % self.motorVoltage
-                cs = '%.2f' % self.motorVoltage
+                cs = '%.2f' % self.motorCurrent
                 print(vs, "V ; ", cs, "A")
 
                 if abs(self.motorCurrent) > self.current_limit:
                     avgCurrent = self.motorCurrent
                     for i in range(4):  # double check before shutoff -- take an average over 50 ms
                         time.sleep(0.01)
-                        voltage, current = self.readCurrentAndVoltage()
+                        voltage, current = self.readVoltageAndCurrent()
                         avgCurrent = (avgCurrent + current) / 2
 
                     if abs(avgCurrent) > self.current_limit:

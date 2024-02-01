@@ -10,7 +10,7 @@ class Motor:
     EXTEND = 0
 
     voltageDivider = (100 + 47) / 100
-    currentLimit = 15
+    currentLimit = 3
 
 
 class Actuator:
