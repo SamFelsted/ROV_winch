@@ -24,7 +24,7 @@ class Actuator:
 
     class SetPoints:
         minPulseTicks = 0
-        maxPulseTicks = 340 # found empirically
+        maxPulseTicks = 360 # found empirically
 
     RETRACT = 1
     EXTEND = 0
