@@ -111,6 +111,8 @@ class Actuator:
         self.currentPulses = 0  # zero position tracker
         targetPulses = util.inchesToPulses(distance)
 
+        print(f" at {self.currentPulses} want {targetPulses}")
+
         speed, direction = util.calculateActuatorSpeed(distance)
         print(speed, direction)
         self.setSpeed(speed)  # write a speed
@@ -134,7 +136,7 @@ class Actuator:
             prior_position = self.currentPulses
 
             if stationary_counter > 50:
-                print("hit wall bro :(")
+                print("hit wall :(")
                 break
 
         self.setSpeed(0)

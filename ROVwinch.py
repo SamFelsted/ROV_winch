@@ -35,7 +35,9 @@ class ROVwinch:
             direction_pin=const.Actuator.Pins.directionPin,
             feedback_pin=const.Actuator.Pins.feedbackPin,
         )
+
         Thread(daemon=True, target=self.winch.monitorCurrent).start()
+        Thread(daemon=True, target=self.winch.rotationTrackingReedSw()).start()
 
         self.heartbeat = DigitalInOut(board.D13)
         self.heartbeat.direction = Direction.OUTPUT
@@ -104,13 +106,15 @@ class ROVwinch:
         while True:
             in_strings = self.getCommand()
 
+            if self.winch.NeedToMoveActuator:
+                print("One rotation")
+
             try:
                 out_string = self.handleInput(in_strings)
                 # serial write encoder position & velocity
                 if self.mode == 'debug':
                     if out_string != "INFO invalid input.\r\n":
                         print(out_string)
-                    in_strings = ['N/Ainit']
                 else:
                     try:
                         self.uart0.write(bytes(out_string, 'UTF-8'))
@@ -123,11 +127,10 @@ class ROVwinch:
 
             except Exception:
                 print("Exception raised. Turning off winch ... ")
-                self.turnOffWinch()
-                in_strings = ['N/Ainit']
+                self.turnOffWinchSystem()
                 print(traceback.format_exc())
 
-    def turnOffWinch(self):
+    def turnOffWinchSystem(self):
         self.winch.off()
         self.windActuator.setSpeed(0)
 

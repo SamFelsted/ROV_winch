@@ -17,5 +17,5 @@ while True:
         print(traceback.format_exc())
         time.sleep(10)
     except KeyboardInterrupt:
-        ROVwinchObject.turnOffWinch()
+        ROVwinchObject.turnOffWinchSystem()
         exit()

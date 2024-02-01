@@ -9,6 +9,8 @@ class Motor:
     RETRACT = 1
     EXTEND = 0
 
+    readSwitchDelay = 0.250
+
     voltageDivider = (100 + 47) / 100
     currentLimit = 3
 
@@ -18,6 +20,9 @@ class Actuator:
         ONOFFPin = 20
         directionPin = 21
         feedbackPin = 10
+    class setPoints:
+        minPulseTicks = 0;
+        maxPulseTicks = 100;
 
     RETRACT = 1
     EXTEND = 0

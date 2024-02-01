@@ -13,7 +13,6 @@ import const
 import util
 
 factory = PiGPIOFactory()
-false_pulse_delay_reed_sw = 0.250
 
 
 class Motor:
@@ -46,11 +45,11 @@ class Motor:
         self.reed_sw = DigitalInOut(eval('board.D' + str(rotation_pin)))
         self.reed_sw.direction = Direction.INPUT
         self.reed_sw.pull = Pull.DOWN
-        self.last_reed_time = time.time() - false_pulse_delay_reed_sw
+        self.last_reed_time = time.time() - const.Motor.readSwitchDelay
         self.NeedToMoveActuator = False
         self.RotationCounter = 0
 
-        # Logged values
+        # Logged values - TODO add logging
         self.motorVoltage = 0
         self.motorCurrent = 0
 
@@ -81,7 +80,7 @@ class Motor:
             current_reedsw_value = self.reed_sw.value
             if current_reedsw_value == 1 and prior_reedsw_value == 0:
                 current_reed_time = time.time()
-                if (current_reed_time - self.last_reed_time) > false_pulse_delay_reed_sw:
+                if (current_reed_time - self.last_reed_time) > const.Motor.readSwitchDelay:
                     if self.reed_sw.value == 1:
                         self.last_reed_time = current_reed_time
                         self.NeedToMoveActuator = True  # move actuator one cable width
