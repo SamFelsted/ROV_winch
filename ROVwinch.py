@@ -37,7 +37,8 @@ class ROVwinch:
         )
 
         Thread(daemon=True, target=self.winch.monitorCurrent).start()
-        Thread(daemon=True, target=self.winch.rotationTrackingReedSw).start()
+        Thread(daemon=True, target=self.winch.rotationReadSwitchTracking).start()
+        Thread(daemon=True, target=self.autoMove).start()
 
         self.heartbeat = DigitalInOut(board.D13)
         self.heartbeat.direction = Direction.OUTPUT
@@ -61,6 +62,12 @@ class ROVwinch:
                     self.heartbeat.value = 1
 
         print("initialized")
+
+    def autoMove(self):
+        while True:
+            if self.winch.NeedToMoveActuator:
+                self.windActuator.moveCableDistance()
+                self.winch.NeedToMoveActuator = False
 
     def handleInput(self, commandInput):
         if commandInput[0] == "ROF":
