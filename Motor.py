@@ -41,19 +41,18 @@ class Motor:
         self.current_limit = currentLimit
 
         # rotation tracking for spool
-        self.reed_sw = DigitalInOut(eval('board.D' + str(rotation_pin)))
-        self.reed_sw.direction = Direction.INPUT
-        self.reed_sw.pull = Pull.DOWN
+        self.readSwitch = DigitalInOut(eval('board.D' + str(rotation_pin)))
+        self.readSwitch.direction = Direction.INPUT
+        self.readSwitch.pull = Pull.DOWN
         self.last_reed_time = time.time() - const.Motor.readSwitchDelay
         self.NeedToMoveActuator = False
-        self.RotationCounter = 0
+        # self.RotationCounter = 0
 
         # Logged values - TODO add logging
         self.motorVoltage = 0
         self.motorCurrent = 0
 
     def set(self, speed, direction):
-
         if direction == 0:  # off
             self.off()
             return
@@ -74,30 +73,20 @@ class Motor:
 
     # reed switch for rotation tracking     
     def rotationTrackingReedSw(self):
-        prior_reedsw_value = self.reed_sw.value
+        readCounts = 0
+        lastReadTime = time.time()
         while True:
-            current_reedsw_value = self.reed_sw.value
-            if current_reedsw_value == 1 and prior_reedsw_value == 0:
-                current_reed_time = time.time()
-                if (current_reed_time - self.last_reed_time) > const.Motor.readSwitchDelay:
-                    if self.reed_sw.value == 1:
-                        self.last_reed_time = current_reed_time
-                        self.NeedToMoveActuator = True  # move actuator one cable width
-                        self.RotationCounter = self.RotationCounter + 1
-            prior_reedsw_value = current_reedsw_value
+            if self.readSwitch.value:
+                if (time.time() - lastReadTime) < const.Motor.readSwitchDelay:
+                    readCounts += 1
+                    if readCounts >= const.Motor.readSwitchThreshold:
+                        self.NeedToMoveActuator = True
 
-    def countRotations(self):
-        self.rotations = 0
-        prior_count = self.RotationCounter
-        while True:
-            curr_count = self.RotationCounter
-            if curr_count > prior_count:
-                if self.FWD0_REV1.value == 0:  # feeding line out
-                    self.rotations = self.rotations + 1
-                elif self.FWD0_REV1.value == 1:  # taking line in
-                    self.rotations = self.rotations - 1
-                prior_count = curr_count
-            time.sleep(0.1)
+                lastReadTime = time.time()
+
+            else:
+                readCounts = 0
+
 
     def readVoltageAndCurrent(self):
         ADCRead = AnalogIn(self.current_sensor, ADS.P0)
@@ -114,8 +103,8 @@ class Motor:
 
                 self.motorVoltage, self.motorCurrent = self.readVoltageAndCurrent()
 
-                vs = '%.2f' % self.motorVoltage
-                cs = '%.2f' % self.motorCurrent
+                # vs = '%.2f' % self.motorVoltage
+                # cs = '%.2f' % self.motorCurrent
                 # print(vs, "V ; ", cs, "A")
 
                 if abs(self.motorCurrent) > self.current_limit:

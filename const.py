@@ -10,6 +10,7 @@ class Motor:
     EXTEND = 0
 
     readSwitchDelay = 0.250
+    readSwitchThreshold = 50  # number of ticks until a read, smaller is more sensitive
 
     voltageDivider = (100 + 47) / 100
     currentLimit = 3
