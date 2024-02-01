@@ -124,7 +124,7 @@ class ROVwinch:
         while True:
 
             if self.winch.NeedToMoveActuator:
-                self.windActuator.moveCableDistance()
+                Thread(daemon=True, target=self.windActuator.moveCableDistance).start()
                 self.winch.NeedToMoveActuator = False
 
             if self.commandToRun != "":

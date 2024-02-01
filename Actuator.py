@@ -42,15 +42,20 @@ class Actuator:
 
         self.infp = open('/home/pi/ROV_winch_sam/stacking_state.txt', 'r+')
         self.lineSpeedState = 0  # float(self.infp.read())
+        self.absolutePosition = 0
 
     def updatePosition(self):
         """
         Count actuator feedback pulses
         """
+        print(self.currentPulses)
         current_feedback_value = self.feedback.value
         if not current_feedback_value and self.prior_feedback_val:
             self.currentPulses = self.currentPulses + 1
         self.prior_feedback_val = current_feedback_value
+
+    def zeroPosition(self):
+        self.absolutePosition = 0
 
     def writeSpeed(self):
         """
@@ -110,8 +115,6 @@ class Actuator:
         """
         self.currentPulses = 0  # zero position tracker
         targetPulses = util.inchesToPulses(distance)
-
-        print(f" at {self.currentPulses} want {targetPulses}")
 
         speed, direction = util.calculateActuatorSpeed(distance)
         print(speed, direction)
