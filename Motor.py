@@ -88,7 +88,6 @@ class Motor:
             else:
                 readCounts = 0
 
-
     def readVoltageAndCurrent(self):
         ADCRead = AnalogIn(self.current_sensor, ADS.P0)
         motorVoltage = ADCRead.voltage

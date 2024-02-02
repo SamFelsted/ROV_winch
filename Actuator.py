@@ -14,7 +14,9 @@ class Actuator:
             self,
             ON_OFF_pin,
             direction_pin,
-            feedback_pin
+            feedback_pin,
+            readSwitchMinPin,
+            readSwitchMaxPin
     ):
 
         self.i2c = busio.I2C(board.SCL, board.SDA)
@@ -42,20 +44,27 @@ class Actuator:
 
         self.infp = open('/home/pi/ROV_winch_sam/stacking_state.txt', 'r+')
         self.lineSpeedState = 0  # float(self.infp.read())
-        self.absolutePosition = 0
+
+        self.logic_high = DigitalInOut(board.D12)
+        self.logic_high.direction = Direction.OUTPUT
+        self.logic_high.value = 1
+
+        self.readSwitchMin = DigitalInOut(eval('board.D' + str(readSwitchMinPin)))
+        self.readSwitchMin.direction = Direction.INPUT
+        self.readSwitchMin.pull = Pull.DOWN
+
+        self.readSwitchMax = DigitalInOut(eval('board.D' + str(readSwitchMaxPin)))
+        self.readSwitchMax.direction = Direction.INPUT
+        self.readSwitchMax.pull = Pull.DOWN
 
     def updatePosition(self):
         """
         Count actuator feedback pulses
         """
-        print(self.currentPulses)
         current_feedback_value = self.feedback.value
         if not current_feedback_value and self.prior_feedback_val:
             self.currentPulses = self.currentPulses + 1
         self.prior_feedback_val = current_feedback_value
-
-    def zeroPosition(self):
-        self.absolutePosition = 0
 
     def writeSpeed(self):
         """
@@ -124,22 +133,18 @@ class Actuator:
         self.time_init = time.time()
         self.last_pulse_time = self.time_init * 1000
 
-        stationary_counter = 0
-        prior_position = 0
+        lastReadTime = time.time()
+        readCounts = 0
         # check counted pulses every 50 ms.
         while abs(self.currentPulses) <= abs(targetPulses):
             self.updatePosition()
-            if self.currentPulses == prior_position:  # if actuator is not moving
-                stationary_counter += 1
-                if stationary_counter > 40:
-                    print(f"Not moving: {stationary_counter}")
-            else:
-                stationary_counter = 0
 
-            prior_position = self.currentPulses
-
-            if stationary_counter > 50:
-                print("hit wall :(")
-                break
+            if self.readSwitchMin or self.readSwitchMax:
+                if (time.time() - lastReadTime) > 5:  # check time since last read
+                    readCounts += 1
+                    if readCounts >= 50:
+                        print("hit read switch")
+                else:
+                    readCounts = 0
 
         self.setSpeed(0)

@@ -22,9 +22,12 @@ class Actuator:
         directionPin = 21
         feedbackPin = 10
 
+        readSwitchMin = 7
+        readSwitchMax = 8
+
     class SetPoints:
         minPulseTicks = 0
-        maxPulseTicks = 360 # found empirically
+        maxPulseTicks = 360  # found empirically
 
     RETRACT = 1
     EXTEND = 0

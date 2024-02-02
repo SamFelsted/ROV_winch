@@ -7,7 +7,6 @@ import serial
 import traceback
 
 import const
-import util
 from Motor import Motor
 from Actuator import Actuator
 
@@ -34,6 +33,8 @@ class ROVwinch:
             ON_OFF_pin=const.Actuator.Pins.ONOFFPin,
             direction_pin=const.Actuator.Pins.directionPin,
             feedback_pin=const.Actuator.Pins.feedbackPin,
+            readSwitchMinPin=const.Actuator.Pins.readSwitchMin,
+            readSwitchMaxPin=const.Actuator.Pins.readSwitchMax
         )
 
         Thread(daemon=True, target=self.winch.monitorCurrent).start()
@@ -68,6 +69,7 @@ class ROVwinch:
     def handleInput(self, commandInput):
         if commandInput[0] == "ROF":
             ROF = int(commandInput[1])
+
             SPD = float(commandInput[3])
             self.winch.set(SPD, ROF)
 
@@ -109,8 +111,7 @@ class ROVwinch:
                     in_decoded = serial_in.decode('UTF-8')
                     in_strings = in_decoded.split()
                     if not in_strings:
-                        return ['N/A']
-                    # print(in_strings)
+                        self.commandToRun = ""
                     self.commandToRun = in_strings
                 else:
                     in_strings = input('Input (<COMMAND> <VALUE>) : ')
@@ -118,12 +119,17 @@ class ROVwinch:
 
             except Exception:
                 print("Error input")
-                return ['N/A']
+                self.commandToRun = ""
+
+    def turnOffWinchSystem(self):
+        self.winch.off()
+        self.windActuator.setSpeed(0)
 
     def control_winch(self):
         while True:
 
             if self.winch.NeedToMoveActuator:
+                print("need to move")
                 Thread(daemon=True, target=self.windActuator.moveCableDistance).start()
                 self.winch.NeedToMoveActuator = False
 
@@ -150,7 +156,3 @@ class ROVwinch:
                     print(traceback.format_exc())
 
                 self.commandToRun = ""
-
-    def turnOffWinchSystem(self):
-        self.winch.off()
-        self.windActuator.setSpeed(0)
