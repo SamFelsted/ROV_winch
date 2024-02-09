@@ -43,7 +43,7 @@ class Actuator:
         self.time_init = time.time()
 
         self.infp = open('/home/pi/ROV_winch_sam/stacking_state.txt', 'r+')
-        self.lineSpeedState = 0  # float(self.infp.read())
+        self.currentForwardDirection = 0  # float(self.infp.read())
 
         self.logic_high = DigitalInOut(board.D12)
         self.logic_high.direction = Direction.OUTPUT
@@ -118,6 +118,18 @@ class Actuator:
         """
         self.move(const.Actuator.cableDiameter)
 
+    def atReadSwitch(self):
+        lastReadTime = time.time()
+        readCounts = 0
+
+        if self.readSwitchMin or self.readSwitchMax:
+            if (time.time() - lastReadTime) > 5:  # check time since last read
+                readCounts += 1
+                if readCounts >= 50:
+                    print("hit read switch")
+            else:
+                readCounts = 0
+
     def move(self, distance):  # default to cable diameter
         """
         :param distance: inches
@@ -127,24 +139,15 @@ class Actuator:
 
         speed, direction = util.calculateActuatorSpeed(distance)
         print(speed, direction)
+
         self.setSpeed(speed)  # write a speed
         self.setDirection(direction)
 
         self.time_init = time.time()
         self.last_pulse_time = self.time_init * 1000
 
-        lastReadTime = time.time()
-        readCounts = 0
         # check counted pulses every 50 ms.
         while abs(self.currentPulses) <= abs(targetPulses):
             self.updatePosition()
-
-            if self.readSwitchMin or self.readSwitchMax:
-                if (time.time() - lastReadTime) > 5:  # check time since last read
-                    readCounts += 1
-                    if readCounts >= 50:
-                        print("hit read switch")
-                else:
-                    readCounts = 0
 
         self.setSpeed(0)

@@ -44,7 +44,7 @@ class ROVwinch:
         self.heartbeat = DigitalInOut(board.D13)
         self.heartbeat.direction = Direction.OUTPUT
 
-        self.commandToRun = ""
+        self.commandsToRun = []
 
         if mode == 'debug':
             print('COMMAND OPTIONS:')
@@ -110,16 +110,15 @@ class ROVwinch:
                     serial_in = self.uart0.readline()
                     in_decoded = serial_in.decode('UTF-8')
                     in_strings = in_decoded.split()
-                    if not in_strings:
-                        self.commandToRun = ""
-                    self.commandToRun = in_strings
+                    if in_strings:
+                        self.commandsToRun.append(in_strings)
                 else:
                     in_strings = input('Input (<COMMAND> <VALUE>) : ')
-                    self.commandToRun = in_strings.split()
+                    self.commandsToRun.append(in_strings.split())
 
             except Exception:
                 print("Error input")
-                self.commandToRun = ""
+                self.commandsToRun.clear()
 
     def turnOffWinchSystem(self):
         self.winch.off()
@@ -133,9 +132,9 @@ class ROVwinch:
                 Thread(daemon=True, target=self.windActuator.moveCableDistance).start()
                 self.winch.NeedToMoveActuator = False
 
-            if self.commandToRun != "":
+            if self.commandsToRun.__len__() > 0:
                 try:
-                    out_string = self.handleInput(self.commandToRun)
+                    out_string = self.handleInput(self.commandsToRun[0])
                     # serial write encoder position & velocity
                     if self.mode == 'debug':
                         if out_string != "INFO invalid input.\r\n":
@@ -155,4 +154,4 @@ class ROVwinch:
                     self.turnOffWinchSystem()
                     print(traceback.format_exc())
 
-                self.commandToRun = ""
+                self.commandsToRun.remove(0)
