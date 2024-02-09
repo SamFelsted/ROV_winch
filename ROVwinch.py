@@ -52,6 +52,7 @@ class ROVwinch:
             print('\t- LWA :: Level wind adjust ( CD = change dir. | <float> = move <float> inches)')
             print('\t- TDA :: Tether diameter adjust (<float> set tether diameter to <float> inches)')
             print('\t- CLA :: Current limit adjust (<float> sets motor current limit to <float> amps)')
+            print('\t- CLEAR :: Clears queue of commands')
 
         else:
             while True:
@@ -114,7 +115,12 @@ class ROVwinch:
                         self.commandsToRun.append(in_strings)
                 else:
                     in_strings = input('Input (<COMMAND> <VALUE>) : ')
-                    self.commandsToRun.append(in_strings.split())
+
+                    if in_strings == "CLEAR":
+                        print("Queue Cleared")
+                        self.commandsToRun.clear()
+                    else:
+                        self.commandsToRun.append(in_strings.split())
 
             except Exception:
                 print("Error input")

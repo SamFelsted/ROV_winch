@@ -32,7 +32,7 @@ class Actuator:
     RETRACT = 1
     EXTEND = 0
     false_pulse_delay_actuator = 0  # (zero for no debounce delay)
-    pulses_per_inch = 25.4 * 17.4  # 17.4 pulses for mm
+    pulses_per_inch = (25.4 * 17.4)/2.6  # 17.4 pulses for mm, divided by magic number found emoyrically
     cableDiameter = 0.42
 
     pGain = 1.75
