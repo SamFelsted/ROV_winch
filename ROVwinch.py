@@ -1,4 +1,5 @@
 # pyright: reportMissingImports=false
+import sys
 import time
 import board
 from digitalio import DigitalInOut, Direction  # GPIO module
@@ -119,6 +120,7 @@ class ROVwinch:
                     if in_strings == "CLEAR":
                         print("Queue Cleared")
                         self.commandsToRun.clear()
+                        sys.exit()
                     else:
                         self.commandsToRun.append(in_strings.split())
 

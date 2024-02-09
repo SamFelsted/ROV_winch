@@ -33,7 +33,7 @@ def calculateActuatorState(distance, forwardDirection):
     :return: speed, direction
     """
     speed = clamp(abs(distance * const.Actuator.pGain), 0, 1)
-    direction = const.Actuator.RETRACT if distance < 0 else const.Actuator.EXTEND
+    direction = flipBit(forwardDirection) if distance < 0 else forwardDirection
 
     return speed, direction
 

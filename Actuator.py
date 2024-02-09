@@ -112,17 +112,13 @@ class Actuator:
         """
         self.move(const.Actuator.cableDiameter)
 
-    def atReadSwitch(self):
-        lastReadTime = time.time()
-        readCounts = 0
-
+    def checkReadSwitch(self, lastReadTime, counts):
         if self.readSwitchMin or self.readSwitchMax:
             if (time.time() - lastReadTime) > 5:  # check time since last read
-                readCounts += 1
-                if readCounts >= 50:
-                    print("hit read switch")
+                counts += 1
             else:
-                readCounts = 0
+                counts = 0
+        return lastReadTime, counts
 
     def move(self, distance, overrideSensor=False):  # default to cable diameter
         """
@@ -136,8 +132,15 @@ class Actuator:
         self.setSpeed(speed)  # write a speed
         self.setDirection(direction)
 
-        # check counted pulses every 50 ms.
+        lastReadTime = time.time()
+        readCounts = 0
+
+        # check counted pulses every 50 ms, main control loop
         while abs(self.currentPulses) <= abs(targetPulses):
             self.updatePosition()
+            lastReadTime, readCounts = self.checkReadSwitch(lastReadTime, readCounts)
+            print()
+            if readCounts >= 60:
+                print("WALL")
 
         self.setSpeed(0)
