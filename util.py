@@ -5,6 +5,15 @@
 import const
 
 
+def flipBit(bit):
+    """
+    Turns a 1 into a 0 and vice versa
+    :param bit: (0, 1)
+    :return: (1, 0) opposite of input
+    """
+    return int((not bool(bit)))
+
+
 def clamp(x, low, high):
     """
     Cuts input lower or higher than max or min
@@ -16,14 +25,14 @@ def clamp(x, low, high):
     return max(min(x, high), low)
 
 
-def calculateActuatorSpeed(distance):
+def calculateActuatorState(distance, forwardDirection):
     """
     Calculates the speed of the actuator based on the speed of the winch
     :param distance: inches
+    :param forwardDirection:
     :return: speed, direction
     """
     speed = clamp(abs(distance * const.Actuator.pGain), 0, 1)
-    print(speed)
     direction = const.Actuator.RETRACT if distance < 0 else const.Actuator.EXTEND
 
     return speed, direction

@@ -31,20 +31,17 @@ class Actuator:
         # optical feedback from the actuator:
         self.feedback = DigitalInOut(eval('board.D' + str(feedback_pin)))
         self.feedback.direction = Direction.INPUT
+        self.feedback.pull = Pull.UP
 
         self.ON.value = 0
         self.activeSpeed = 0
         self.currentPulses = 0
         self.prior_feedback_val = self.feedback.value
 
-        self.feedback.pull = Pull.UP
-        self.last_pulse_time = time.time() - const.Actuator.false_pulse_delay_actuator
-
-        self.time_init = time.time()
-
         self.infp = open('/home/pi/ROV_winch_sam/stacking_state.txt', 'r+')
         self.currentForwardDirection = 0  # float(self.infp.read())
 
+        # Min, max readswitch setup
         self.logic_high = DigitalInOut(board.D12)
         self.logic_high.direction = Direction.OUTPUT
         self.logic_high.value = 1
@@ -99,17 +96,14 @@ class Actuator:
         """
         Reverses direction of actuator
         """
-        if self.direction.value == const.Actuator.RETRACT:
-            self.direction.value = const.Actuator.EXTEND
-        else:
-            self.direction.value = const.Actuator.RETRACT
+        self.direction.value = util.flipBit(self.direction.value)
 
     def manualAdjust(self, distance):
         """
         :param distance (inches)
         """
         print('level wind adjusting ' + distance + ' inches :)')
-        self.move(float(distance))
+        self.move(float(distance), True)
 
     def moveCableDistance(self):
         """
@@ -130,21 +124,17 @@ class Actuator:
             else:
                 readCounts = 0
 
-    def move(self, distance):  # default to cable diameter
+    def move(self, distance, overrideSensor=False):  # default to cable diameter
         """
         :param distance: inches
+        :param overrideSensor:
         """
         self.currentPulses = 0  # zero position tracker
         targetPulses = util.inchesToPulses(distance)
-
-        speed, direction = util.calculateActuatorSpeed(distance)
-        print(speed, direction)
+        speed, direction = util.calculateActuatorState(distance, self.currentForwardDirection)
 
         self.setSpeed(speed)  # write a speed
         self.setDirection(direction)
-
-        self.time_init = time.time()
-        self.last_pulse_time = self.time_init * 1000
 
         # check counted pulses every 50 ms.
         while abs(self.currentPulses) <= abs(targetPulses):

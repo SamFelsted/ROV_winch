@@ -39,7 +39,6 @@ class ROVwinch:
 
         Thread(daemon=True, target=self.winch.monitorCurrent).start()
         Thread(daemon=True, target=self.winch.rotationReadSwitchTracking).start()
-        Thread(daemon=True, target=self.getCommand).start()
 
         self.heartbeat = DigitalInOut(board.D13)
         self.heartbeat.direction = Direction.OUTPUT
@@ -65,6 +64,7 @@ class ROVwinch:
                     self.heartbeat.value = 1
 
         print("initialized")
+        Thread(daemon=True, target=self.getCommand).start()
 
     def handleInput(self, commandInput):
         if commandInput[0] == "ROF":
@@ -132,7 +132,7 @@ class ROVwinch:
                 Thread(daemon=True, target=self.windActuator.moveCableDistance).start()
                 self.winch.NeedToMoveActuator = False
 
-            if self.commandsToRun.__len__() > 0:
+            if len(self.commandsToRun) > 0:
                 try:
                     out_string = self.handleInput(self.commandsToRun[0])
                     # serial write encoder position & velocity
@@ -154,4 +154,4 @@ class ROVwinch:
                     self.turnOffWinchSystem()
                     print(traceback.format_exc())
 
-                self.commandsToRun.remove(0)
+                self.commandsToRun.pop(0)
