@@ -38,8 +38,12 @@ class Actuator:
         self.currentPulses = 0
         self.prior_feedback_val = self.feedback.value
 
+        # Stuff for direction logic
         self.infp = open('/home/pi/ROV_winch_sam/stacking_state.txt', 'r+')
         self.currentForwardDirection = 0  # float(self.infp.read())
+
+        self.lastReadTime = time.time()
+        self.readCount = 0
 
         # Min, max readswitch setup
         self.logic_high = DigitalInOut(board.D12)
@@ -112,13 +116,16 @@ class Actuator:
         """
         self.move(const.Actuator.cableDiameter)
 
-    def checkReadSwitch(self, lastReadTime, counts):
+    def checkReadSwitch(self):
         if self.readSwitchMin or self.readSwitchMax:
-            if (time.time() - lastReadTime) > 5:  # check time since last read
-                counts += 1
-            else:
-                counts = 0
-        return lastReadTime, counts
+            self.lastReadTime = time.time()
+
+            if self.readCount > 150 and abs(self.lastReadTime - time.time()) < 1:
+                self.readCount = 0
+                return True
+
+            self.readCount += 1
+            return False
 
     def move(self, distance, overrideSensor=False):  # default to cable diameter
         """
@@ -132,15 +139,11 @@ class Actuator:
         self.setSpeed(speed)  # write a speed
         self.setDirection(direction)
 
-        lastReadTime = time.time()
-        readCounts = 0
-
         # check counted pulses every 50 ms, main control loop
         while abs(self.currentPulses) <= abs(targetPulses):
             self.updatePosition()
-            lastReadTime, readCounts = self.checkReadSwitch(lastReadTime, readCounts)
-            print()
-            if readCounts >= 60:
+
+            if self.checkReadSwitch():
                 print("WALL")
 
         self.setSpeed(0)
