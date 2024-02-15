@@ -100,7 +100,7 @@ class Actuator:
         """
         Reverses direction of actuator
         """
-        self.direction.value = util.flipBit(self.direction.value)
+        self.currentForwardDirection = util.flipBit(self.direction.value)
 
     def manualAdjust(self, distance):
         """
@@ -117,10 +117,12 @@ class Actuator:
         self.move(const.Actuator.cableDiameter)
 
     def checkReadSwitch(self):
-        if self.readSwitchMin or self.readSwitchMax:
-            self.lastReadTime = time.time()
+        if (self.readSwitchMin.value and self.currentForwardDirection == 1) or (
+                self.readSwitchMax.value and self.currentForwardDirection == 0):
 
-            if self.readCount > 150 and abs(self.lastReadTime - time.time()) < 1:
+            self.lastReadTime = time.time()
+            # print("Min: " + str(self.readSwitchMin.value) + "\nMax: " + str(self.readSwitchMax.value))
+            if self.readCount > 50 and abs(self.lastReadTime - time.time()) < 1:
                 self.readCount = 0
                 return True
 
@@ -144,6 +146,8 @@ class Actuator:
             self.updatePosition()
 
             if self.checkReadSwitch():
+                self.changeDirection()
                 print("WALL")
+                break
 
         self.setSpeed(0)
