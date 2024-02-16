@@ -77,7 +77,6 @@ class Motor:
         lastReadTime = time.time()
         while True:
             if self.readSwitch.value:
-                print("Motor reading")
                 if (time.time() - lastReadTime) > const.Motor.readSwitchDelay: # check time since last read
                     readCounts += 1
                     if readCounts >= const.Motor.readSwitchThreshold:
