@@ -80,11 +80,9 @@ class Actuator:
         :param value: motor percent (0 to 1)
         """
         if value == 0:
-            print("Wind actuator off")
             self.ON.value = 0
             return
 
-        print("Wind actuator on")
         self.ON.value = 1
         self.activeSpeed = util.clamp(abs(value), 0, 1)
         self.writeSpeed()

@@ -135,7 +135,6 @@ class ROVwinch:
     def control_winch(self):
         while True:
             if self.winch.NeedToMoveActuator:
-                print("need to move")
                 Thread(daemon=True, target=self.windActuator.moveCableDistance).start()
                 self.winch.NeedToMoveActuator = False
 

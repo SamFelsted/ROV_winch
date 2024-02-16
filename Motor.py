@@ -81,7 +81,6 @@ class Motor:
                     readCounts += 1
                     if readCounts >= const.Motor.readSwitchThreshold:
                         self.NeedToMoveActuator = True
-                        print("one rotation")
                         readCounts = 0
                         lastReadTime = time.time()
 
