@@ -1,5 +1,4 @@
 # pyright: reportMissingImports=false
-import sys
 import time
 import board
 from digitalio import DigitalInOut, Direction  # GPIO module
@@ -39,7 +38,7 @@ class ROVwinch:
         )
 
         Thread(daemon=True, target=self.winch.monitorCurrent).start()
-        Thread(daemon=True, target=self.winch.rotationReadSwitchTracking).start()
+        Thread(daemon=True, target=self.winch.rotationReedSwitchTracking).start()
 
         self.heartbeat = DigitalInOut(board.D13)
         self.heartbeat.direction = Direction.OUTPUT
@@ -120,7 +119,6 @@ class ROVwinch:
                     if in_strings == "CLEAR":
                         print("Queue Cleared")
                         self.commandsToRun.clear()
-                        sys.exit()
                     else:
                         self.commandsToRun.append(in_strings.split())
 
@@ -135,21 +133,22 @@ class ROVwinch:
     def control_winch(self):
         while True:
             if self.winch.NeedToMoveActuator:
-                Thread(daemon=True, target=self.windActuator.moveCableDistance).start()
+                self.windActuator.moveCableDistance()
                 self.winch.NeedToMoveActuator = False
 
             if len(self.commandsToRun) > 0:
                 try:
                     out_string = self.handleInput(self.commandsToRun[0])
-                    # serial write encoder position & velocity
                     if self.mode == 'debug':
                         if out_string != "INFO invalid input.\r\n":
                             print(out_string)
                     else:
                         try:
-                            self.uart0.write(bytes(out_string, 'UTF-8'))
                             if out_string.split()[0] == "INFO":
                                 print(out_string)
+                            elif len(self.commandsToRun) == 0:
+                                out_string = "ROT "+str(self.winch.rotationCounter)+"\r\n"
+                            self.uart0.write(bytes(out_string, 'UTF-8'))
                         except Exception:
                             print("error sending serial output")
 

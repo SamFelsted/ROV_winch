@@ -46,7 +46,7 @@ class Motor:
         self.readSwitch.pull = Pull.DOWN
         self.last_reed_time = time.time() - const.Motor.readSwitchDelay
         self.NeedToMoveActuator = False
-        # self.RotationCounter = 0
+        self.rotationCounter = 0
 
         # Logged values - TODO add logging
         self.motorVoltage = 0
@@ -72,15 +72,17 @@ class Motor:
         self.servo.angle = 0
 
     # reed switch for rotation tracking     
-    def rotationReadSwitchTracking(self):
+    def rotationReedSwitchTracking(self):
         readCounts = 0
         lastReadTime = time.time()
         while True:
             if self.readSwitch.value:
-                if (time.time() - lastReadTime) > const.Motor.readSwitchDelay: # check time since last read
+                if (time.time() - lastReadTime) > const.Motor.readSwitchDelay and self.ON.value == 1:  # check time
+                    # since last read
                     readCounts += 1
                     if readCounts >= const.Motor.readSwitchThreshold:
                         self.NeedToMoveActuator = True
+                        self.rotationCounter += 1
                         readCounts = 0
                         lastReadTime = time.time()
 

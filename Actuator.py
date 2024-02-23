@@ -143,6 +143,9 @@ class Actuator:
         while abs(self.currentPulses) <= abs(targetPulses):
             self.updatePosition()
 
+            print("Actuator pos: " + str(self.currentPulses))
+            print("Wanted pos: " + str(targetPulses))
+
             if self.checkReadSwitch():
                 self.changeDirection()
                 print("WALL")
