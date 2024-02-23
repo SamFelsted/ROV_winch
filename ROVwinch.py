@@ -68,7 +68,11 @@ class ROVwinch:
         Thread(daemon=True, target=self.getCommand).start()
 
     def handleInput(self, commandInput):
-        if commandInput[0] == "ROF":
+        if len(commandInput) == 0:
+            self.winch.off()
+            return "Empty command, shutting off winch"
+
+        elif commandInput[0] == "ROF":
             ROF = int(commandInput[1])
 
             SPD = float(commandInput[3])
