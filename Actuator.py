@@ -39,13 +39,14 @@ class Actuator:
         self.prior_feedback_val = self.feedback.value
 
         # Stuff for direction logic
-        self.infp = open('/home/pi/ROV_winch_sam/stacking_state.txt', 'r+')
-        self.currentForwardDirection = 0  # float(self.infp.read())
+        infp = open('/home/pi/ROV_winch/stacking_state.txt', 'r')
+        self.currentForwardDirection = int(infp.read())
+        infp.close()
 
         self.lastReadTime = time.time()
         self.readCount = 0
 
-        # Min, max readswitch setup
+        # Min, max reedswitch setup
         self.logic_high = DigitalInOut(board.D12)
         self.logic_high.direction = Direction.OUTPUT
         self.logic_high.value = 1
@@ -71,7 +72,6 @@ class Actuator:
         """
         Writes the speed to the motor and logs it
         """
-        self.infp.write(f"{self.activeSpeed}")
         self.dac.normalized_value = self.activeSpeed
 
     def setSpeed(self, value):
@@ -99,6 +99,9 @@ class Actuator:
         Reverses direction of actuator
         """
         self.currentForwardDirection = util.flipBit(self.direction.value)
+        with open('/home/pi/ROV_winch/stacking_state.txt', 'w') as infp:
+            infp.write(str(self.currentForwardDirection))
+            infp.close()
 
     def manualAdjust(self, distance):
         """
@@ -143,8 +146,8 @@ class Actuator:
         while abs(self.currentPulses) <= abs(targetPulses):
             self.updatePosition()
 
-            print("Actuator pos: " + str(self.currentPulses))
-            print("Wanted pos: " + str(targetPulses))
+            # print("Actuator pos: " + str(self.currentPulses))
+            # print("Wanted pos: " + str(targetPulses))
 
             if self.checkReadSwitch():
                 self.changeDirection()

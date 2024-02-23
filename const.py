@@ -13,7 +13,7 @@ class Motor:
     readSwitchThreshold = 50  # number of ticks until a read, smaller is more sensitive
 
     voltageDivider = (100 + 47) / 100
-    currentLimit = 3
+    currentLimit = 15
 
 
 class Actuator:

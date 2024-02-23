@@ -14,6 +14,7 @@ while True:
         ROVwinchObject.control_winch()
     except Exception:
         print("critical failure")
+        ROVwinchObject.turnOffWinchSystem()
         print(traceback.format_exc())
         time.sleep(10)
     except KeyboardInterrupt:
