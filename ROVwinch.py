@@ -1,4 +1,5 @@
 # pyright: reportMissingImports=false
+import sys
 import time
 import board
 from digitalio import DigitalInOut, Direction  # GPIO module
