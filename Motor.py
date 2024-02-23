@@ -22,6 +22,7 @@ class Motor:
             ON_OFF_pin,
             mot_pot_pin,
             rotation_pin,
+            overBoarding,
             currentLimit
     ):
 
@@ -51,6 +52,11 @@ class Motor:
         # Logged values - TODO add logging
         self.motorVoltage = 0
         self.motorCurrent = 0
+
+        # over-boarding placeholder code
+        # self.topSwitch = DigitalInOut(eval('board.D' + str(overBoarding)))
+        # self.topSwitch.direction = Direction.INPUT
+        # self.topSwitch.pull = Pull.DOWN
 
     def set(self, speed, direction):
         if direction == 0:  # off

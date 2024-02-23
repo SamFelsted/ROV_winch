@@ -26,6 +26,7 @@ class ROVwinch:
             ON_OFF_pin=const.Motor.Pins.ON_OFF_pin,
             mot_pot_pin=const.Motor.Pins.mot_pot_pin,
             rotation_pin=const.Motor.Pins.rotation_pin,
+            overBoarding=const.Motor.Pins.overBoardingPin,
             currentLimit=const.Motor.currentLimit
         )
 

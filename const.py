@@ -5,6 +5,7 @@ class Motor:
         mot_pot_pin = 16
         rotation_pin = 24
         current_limit = 15
+        overBoardingPin = 0
 
     RETRACT = 1
     EXTEND = 0
