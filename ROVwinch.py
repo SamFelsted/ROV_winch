@@ -88,7 +88,7 @@ class ROVwinch:
                     self.windActuator.changeDirection()
                     return "INFO Level wind direction changed.\r\n"
                 else:
-                    self.windActuator.manualAdjust(commandInput[1], self.winch.direction)
+                    self.windActuator.manualAdjust(commandInput[1])
                     return "INFO Level wind adjusted.\r\n"
             else:
                 return "INFO Motor must be stationary before adjusting level wind.\r\n"

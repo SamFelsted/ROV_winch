@@ -103,22 +103,22 @@ class Actuator:
             infp.write(str(self.currentForwardDirection))
             infp.close()
 
-    def manualAdjust(self, distance, winchDirection):
+    def manualAdjust(self, distance):
         """
         :param distance (inches)
-        :param winchDirection: direction of ROV winch
         """
         print('level wind adjusting ' + distance + ' inches :)')
-        self.move(float(distance), winchDirection, True)
+        self.move(float(distance), True)
 
     def moveCableDistance(self, winchDirection):
         """
+
         Move the actuator one cable width
-        :param winchDirection: direction of ROV winch
+        :param winchDirection: direction of ROV winch, 1 is forward and -1 is backward
         :return:
         """
 
-        self.move(const.Actuator.cableDiameter, winchDirection)
+        self.move(const.Actuator.cableDiameter * winchDirection, False)
 
     def checkReadSwitch(self):
         if (self.readSwitchMin.value and self.currentForwardDirection == 1) or (
@@ -137,21 +137,16 @@ class Actuator:
         print("Actuator pos: " + str(self.currentPulses))
         print("Wanted pos: " + str(targetPulses))
 
-    def move(self, distance, winchDirection, overrideSensor=False):  # default to cable diameter
+    def move(self, distance, manualOverride):  # default to cable diameter
         """
-        :param winchDirection:
         :param distance: inches
-        :param overrideSensor:
+        :param manualOverride:
         """
         self.currentPulses = 0  # zero position tracker
         targetPulses = util.inchesToPulses(distance)
 
         # calculations for direction
-        if overrideSensor:
-            speed = 0.8
-            direction = 1 if distance > 0 else -1
-        else:
-            speed, direction = util.calculateActuatorState(distance, winchDirection,  self.currentForwardDirection)
+        speed, direction = util.calculateActuatorState(distance,  self.currentForwardDirection, manualOverride)
 
         self.setSpeed(speed)  # write a speed
         self.setDirection(direction)
