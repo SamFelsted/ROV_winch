@@ -103,19 +103,22 @@ class Actuator:
             infp.write(str(self.currentForwardDirection))
             infp.close()
 
-    def manualAdjust(self, distance):
+    def manualAdjust(self, distance, winchDirection):
         """
         :param distance (inches)
+        :param winchDirection: direction of ROV winch
         """
         print('level wind adjusting ' + distance + ' inches :)')
-        self.move(float(distance), True)
+        self.move(float(distance), winchDirection, True)
 
-    def moveCableDistance(self):
+    def moveCableDistance(self, winchDirection):
         """
         Move the actuator one cable width
+        :param winchDirection: direction of ROV winch
         :return:
         """
-        self.move(const.Actuator.cableDiameter)
+
+        self.move(const.Actuator.cableDiameter, winchDirection)
 
     def checkReadSwitch(self):
         if (self.readSwitchMin.value and self.currentForwardDirection == 1) or (
@@ -130,28 +133,48 @@ class Actuator:
             self.readCount += 1
             return False
 
-    def move(self, distance, overrideSensor=False):  # default to cable diameter
+    def debug(self, targetPulses):
+        print("Actuator pos: " + str(self.currentPulses))
+        print("Wanted pos: " + str(targetPulses))
+
+    def move(self, distance, winchDirection, overrideSensor=False):  # default to cable diameter
         """
+        :param winchDirection:
         :param distance: inches
         :param overrideSensor:
         """
         self.currentPulses = 0  # zero position tracker
         targetPulses = util.inchesToPulses(distance)
-        speed, direction = util.calculateActuatorState(distance, self.currentForwardDirection)
+
+        # calculations for direction
+        if overrideSensor:
+            speed = 0.8
+            direction = 1 if distance > 0 else -1
+        else:
+            speed, direction = util.calculateActuatorState(distance, winchDirection,  self.currentForwardDirection)
 
         self.setSpeed(speed)  # write a speed
         self.setDirection(direction)
 
+        stationary_counter = 0
+        prior_position = 0
         # check counted pulses every 50 ms, main control loop
         while abs(self.currentPulses) <= abs(targetPulses):
             self.updatePosition()
 
-            # print("Actuator pos: " + str(self.currentPulses))
-            # print("Wanted pos: " + str(targetPulses))
+            if self.currentPulses == prior_position:  # if actuator is not moving
+                stationary_counter += 1
+            else:
+                stationary_counter = 0
+
+            prior_position = self.currentPulses
+
+            if stationary_counter > 50:
+                print("hit wall :(")
+                break
 
             if self.checkReadSwitch():
                 self.changeDirection()
-                print("WALL")
                 break
 
         self.setSpeed(0)

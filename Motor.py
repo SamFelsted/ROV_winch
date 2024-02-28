@@ -41,6 +41,8 @@ class Motor:
         self.current_sensor = ADS.ADS1115(self.i2c, address=0x48)
         self.current_limit = currentLimit
 
+        self.direction = 0
+
         # rotation tracking for spool
         self.readSwitch = DigitalInOut(eval('board.D' + str(rotation_pin)))
         self.readSwitch.direction = Direction.INPUT
@@ -59,6 +61,9 @@ class Motor:
         # self.topSwitch.pull = Pull.DOWN
 
     def set(self, speed, direction):
+
+        self.direction = direction
+
         if direction == 0:  # off
             self.off()
             return

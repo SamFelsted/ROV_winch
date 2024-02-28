@@ -1,5 +1,4 @@
 # pyright: reportMissingImports=false
-import sys
 import time
 import board
 from digitalio import DigitalInOut, Direction  # GPIO module
@@ -89,7 +88,7 @@ class ROVwinch:
                     self.windActuator.changeDirection()
                     return "INFO Level wind direction changed.\r\n"
                 else:
-                    self.windActuator.manualAdjust(commandInput[1])
+                    self.windActuator.manualAdjust(commandInput[1], self.winch.direction)
                     return "INFO Level wind adjusted.\r\n"
             else:
                 return "INFO Motor must be stationary before adjusting level wind.\r\n"
@@ -139,7 +138,7 @@ class ROVwinch:
     def control_winch(self):
         while True:
             if self.winch.NeedToMoveActuator:
-                self.windActuator.moveCableDistance()
+                self.windActuator.moveCableDistance(self.winch.direction)
                 self.winch.NeedToMoveActuator = False
 
             if len(self.commandsToRun) > 0:
@@ -153,7 +152,7 @@ class ROVwinch:
                             if out_string.split()[0] == "INFO":
                                 print(out_string)
                             elif len(self.commandsToRun) == 0:
-                                out_string = "ROT "+str(self.winch.rotationCounter)+"\r\n"
+                                out_string = "ROT " + str(self.winch.rotationCounter) + "\r\n"
                             self.uart0.write(bytes(out_string, 'UTF-8'))
                         except Exception:
                             print("error sending serial output")
