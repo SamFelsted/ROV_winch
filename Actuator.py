@@ -60,7 +60,7 @@ class Actuator:
         self.readSwitchMax = DigitalInOut(eval('board.D' + str(readSwitchMaxPin)))
         self.readSwitchMax.direction = Direction.INPUT
         self.readSwitchMax.pull = Pull.DOWN
-        
+
         Thread(daemon=True, target=self.updatePosition).start()
 
     def updatePosition(self):
@@ -76,7 +76,7 @@ class Actuator:
                 self.stationary_counter += 1
             self.prior_feedback_val = current_feedback_value
             time.sleep(0.0001)
-    
+
     def updatePosition_off(self):
         """
             Algorithm based on debounce.c written by Kenneth A. Kuhn
@@ -87,9 +87,9 @@ class Actuator:
         integrator = 0
         output = 0
         prior_output = 0
-        
+
         while True:
-            time.sleep(1/SAMPLE_FREQUENCY)
+            time.sleep(1 / SAMPLE_FREQUENCY)
             input = self.feedback.value
             if input == 0:
                 if integrator > 0:
@@ -135,17 +135,18 @@ class Actuator:
         """
         Reverses direction of actuator
         """
-        self.currentForwardDirection = util.flipBit(self.direction.value)
+        self.currentForwardDirection = util.flipBit(self.currentForwardDirection)
         with open('/home/pi/ROV_winch/stacking_state.txt', 'w') as infp:
             infp.write(str(self.currentForwardDirection))
             infp.close()
 
-    def manualAdjust(self, distance):
+    def manualAdjust(self, distance, winchDirection):
         """
+        :param winchDirection:
         :param distance (inches)
         """
         print('level wind adjusting ' + distance + ' inches :)')
-        self.move(float(distance), True)
+        self.move(float(distance), winchDirection, True)
 
     def moveCableDistance(self, winchDirection):
         """
@@ -155,10 +156,10 @@ class Actuator:
         :return:
         """
         print("moving actuator........")
-        self.move(const.Actuator.cableDiameter * winchDirection, False)
+        self.move(const.Actuator.cableDiameter, winchDirection, False)
 
     def checkReadSwitch(self, direction):
-        
+
         if (self.readSwitchMax.value and direction == 1) or (
                 self.readSwitchMin.value and direction == 0):
 
@@ -176,8 +177,9 @@ class Actuator:
         print("Wanted pos: " + str(targetPulses))
         print(self.stationary_counter)
 
-    def move(self, distance, manualOverride):  # default to cable diameter
+    def move(self, distance, winchDirection, manualOverride):  # default to cable diameter
         """
+        :param winchDirection:
         :param distance: inches
         :param manualOverride:
         """
@@ -185,15 +187,15 @@ class Actuator:
         targetPulses = util.inchesToPulses(distance)
 
         # calculations for direction
-        speed, direction = util.calculateActuatorState(distance,  self.currentForwardDirection, manualOverride)
+        speed, direction = util.calculateActuatorState(distance, winchDirection, self.currentForwardDirection, manualOverride)
 
         self.setSpeed(speed)  # write a speed
         self.setDirection(direction)
 
         self.stationary_counter = 0
-        
+
         while abs(self.currentPulses) <= abs(targetPulses):
-            
+
             # self.debug(targetPulses)
 
             if self.stationary_counter > 1000:
@@ -202,10 +204,13 @@ class Actuator:
 
             if self.checkReadSwitch(direction):
                 print("reed switch triggered")
+
+                print("Pre-Direction: " + str(self.currentForwardDirection))
                 if not manualOverride:
                     self.changeDirection()
+                print("Post-Direction: " + str(self.currentForwardDirection))
                 break
-        
+
             time.sleep(0.05)
 
         self.setSpeed(0)

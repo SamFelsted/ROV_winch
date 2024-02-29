@@ -25,9 +25,10 @@ def clamp(x, low, high):
     return max(min(x, high), low)
 
 
-def calculateActuatorState(distance, forwardDirection, manualOverride):
+def calculateActuatorState(distance, winchDirection, forwardDirection, manualOverride):
     """
     Calculates the speed of the actuator based on the speed of the winch
+    :param winchDirection:
     :param distance: inches
     :param forwardDirection:
     :return: speed, direction
@@ -36,8 +37,11 @@ def calculateActuatorState(distance, forwardDirection, manualOverride):
         speed = 1
         direction = 0 if distance > 0 else 1
     else:
-        speed = 1#clamp(abs(distance * const.Actuator.pGain), 0, 1)
+        speed = clamp(abs(distance * const.Actuator.pGain), 0, 1)
         direction = flipBit(forwardDirection) if distance < 0 else forwardDirection
+
+        if winchDirection == -1:
+            direction = flipBit(direction)
 
     return speed, direction
 
