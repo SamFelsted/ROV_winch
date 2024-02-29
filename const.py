@@ -11,7 +11,7 @@ class Motor:
     EXTEND = 0
 
     readSwitchDelay = 0.250
-    readSwitchThreshold = 50  # number of ticks until a read, smaller is more sensitive
+    readSwitchThreshold = 2  # number of ticks until a read, smaller is more sensitive
 
     voltageDivider = (100 + 47) / 100
     currentLimit = 15
@@ -33,7 +33,7 @@ class Actuator:
     RETRACT = 1
     EXTEND = 0
     false_pulse_delay_actuator = 0  # (zero for no debounce delay)
-    pulses_per_inch = (25.4 * 17.4)/2.6  # 17.4 pulses for mm, divided by magic number found emoyrically
-    cableDiameter = 0.42 # TESTING NUMBER PLEASE USE A BETTER ONE
+    pulses_per_inch = (25.4 * 17.4) # 17.4 pulses for mm, divided by magic number found empirically
+    cableDiameter = 0.3 # TESTING NUMBER PLEASE USE A BETTER ONE
 
     pGain = 1.75

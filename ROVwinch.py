@@ -130,6 +130,8 @@ class ROVwinch:
             except Exception:
                 print("Error input")
                 self.commandsToRun.clear()
+            
+            time.sleep(0.1)
 
     def turnOffWinchSystem(self):
         self.winch.off()
@@ -165,3 +167,5 @@ class ROVwinch:
                     print(traceback.format_exc())
 
                 self.commandsToRun.pop(0)
+            
+            time.sleep(0.1)

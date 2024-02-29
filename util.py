@@ -33,10 +33,10 @@ def calculateActuatorState(distance, forwardDirection, manualOverride):
     :return: speed, direction
     """
     if manualOverride:
-        speed = 0.8
-        direction = 1 if distance > 0 else -1
+        speed = 1
+        direction = 0 if distance > 0 else 1
     else:
-        speed = clamp(abs(distance * const.Actuator.pGain), 0, 1)
+        speed = 1#clamp(abs(distance * const.Actuator.pGain), 0, 1)
         direction = flipBit(forwardDirection) if distance < 0 else forwardDirection
 
     return speed, direction
