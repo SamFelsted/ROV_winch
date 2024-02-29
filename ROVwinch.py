@@ -150,22 +150,18 @@ class ROVwinch:
                         if out_string != "INFO invalid input.\r\n":
                             print(out_string)
                     else:
-                        try:
-                            if out_string.split()[0] == "INFO":
-                                print(out_string)
-                            elif len(self.commandsToRun) == 0:
-                                out_string = "ROT " + str(self.winch.rotationCounter) + "\r\n"
-                            self.uart0.write(bytes(out_string, 'UTF-8'))
-                        except Exception:
-                            print("error sending serial output")
+                        if out_string.split()[0] == "INFO":
+                            print(out_string)
 
-                    self.heartbeat.value = not self.heartbeat.value  # toggle LED
+                    self.commandsToRun.pop(0)
 
                 except Exception:
-                    print("Exception raised. Turning off winch ... ")
-                    self.turnOffWinchSystem()
-                    print(traceback.format_exc())
+                        print("Exception raised. Turning off winch ... ")
+                        self.turnOffWinchSystem()
+                        print(traceback.format_exc())
 
-                self.commandsToRun.pop(0)
-            
+            out_string = "ROT " + str(self.winch.rotationCounter) + "\r\n"
+            self.uart0.write(bytes(out_string, 'utf-8'))
+
+            self.heartbeat.value = not self.heartbeat.value  # toggle LED
             time.sleep(0.1)
