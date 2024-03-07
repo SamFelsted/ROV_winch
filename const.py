@@ -1,3 +1,13 @@
+class ROVconst:
+    # Controls for the multithreading speeds
+    failureSleep = 10
+    getCommandSleep = 0.1
+    controlSleep = 0.1
+    rotationReedSwitchSleep = 0.001
+    motorCurrentSleep = 0.1
+    actuatorMoveSleep = 0.05
+
+
 class Motor:
     class Pins:
         FWD0_REV1_pin = 26
@@ -33,7 +43,7 @@ class Actuator:
     RETRACT = 1
     EXTEND = 0
     false_pulse_delay_actuator = 0  # (zero for no debounce delay)
-    pulses_per_inch = (25.4 * 17.4) # 17.4 pulses for mm, divided by magic number found empirically
-    cableDiameter = 0.3 # TESTING NUMBER PLEASE USE A BETTER ONE
+    pulses_per_inch = (25.4 * 17.4)  # 17.4 pulses for mm, divided by magic number found empirically
+    cableDiameter = 0.3  # TESTING NUMBER PLEASE USE A BETTER ONE
 
     pGain = 1.75

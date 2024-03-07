@@ -87,7 +87,7 @@ class Motor:
         readCounts = 0
         lastReadTime = time.time()
         while True:
-            time.sleep(0.001)
+            time.sleep(const.ROVconst.rotationReedSwitchSleep)
             if self.readSwitch.value:
                 if (time.time() - lastReadTime) > const.Motor.readSwitchDelay and self.ON.value == 1:  # check time
                     # since last read
@@ -112,7 +112,7 @@ class Motor:
         Monitors the current of the motor, shuts off motor if above threshold in const
         """
         while True:
-            time.sleep(0.1)
+            time.sleep(const.ROVconst.motorCurrentSleep)
             if self.ON.value == 1:
 
                 self.motorVoltage, self.motorCurrent = self.readVoltageAndCurrent()

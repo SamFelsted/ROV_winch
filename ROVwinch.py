@@ -131,7 +131,7 @@ class ROVwinch:
                 print("Error input")
                 self.commandsToRun.clear()
             
-            time.sleep(0.1)
+            time.sleep(const.ROVconst.getCommandSleep)
 
     def turnOffWinchSystem(self):
         self.winch.off()
@@ -164,4 +164,4 @@ class ROVwinch:
             self.uart0.write(bytes(out_string, 'utf-8'))
 
             self.heartbeat.value = not self.heartbeat.value  # toggle LED
-            time.sleep(0.1)
+            time.sleep(const.ROVconst.controlSleep)

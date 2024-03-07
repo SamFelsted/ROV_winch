@@ -211,6 +211,6 @@ class Actuator:
                 print("Post-Direction: " + str(self.currentForwardDirection))
                 break
 
-            time.sleep(0.05)
+            time.sleep(const.ROVconst.actuatorMoveSleep)
 
         self.setSpeed(0)

@@ -2,6 +2,7 @@ from ROVwinch import ROVwinch
 import time
 import argparse
 import traceback
+import const
 
 # parse arguements
 argParser = argparse.ArgumentParser()
@@ -16,7 +17,7 @@ while True:
         print("critical failure")
         ROVwinchObject.turnOffWinchSystem()
         print(traceback.format_exc())
-        time.sleep(10)
+        time.sleep(const.ROVconst.failureSleep)
     except KeyboardInterrupt:
         ROVwinchObject.turnOffWinchSystem()
         exit()
