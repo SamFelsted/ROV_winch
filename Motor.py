@@ -22,7 +22,6 @@ class Motor:
             ON_OFF_pin,
             mot_pot_pin,
             rotation_pin,
-            overBoarding,
             currentLimit
     ):
 
@@ -59,6 +58,9 @@ class Motor:
         # self.topSwitch = DigitalInOut(eval('board.D' + str(overBoarding)))
         # self.topSwitch.direction = Direction.INPUT
         # self.topSwitch.pull = Pull.DOWN
+
+    def getDirection(self):
+        return self.direction
 
     def set(self, speed, direction):
 

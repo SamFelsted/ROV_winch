@@ -26,7 +26,6 @@ class ROVwinch:
             ON_OFF_pin=const.Motor.Pins.ON_OFF_pin,
             mot_pot_pin=const.Motor.Pins.mot_pot_pin,
             rotation_pin=const.Motor.Pins.rotation_pin,
-            overBoarding=const.Motor.Pins.overBoardingPin,
             currentLimit=const.Motor.currentLimit
         )
 
@@ -37,6 +36,9 @@ class ROVwinch:
             readSwitchMinPin=const.Actuator.Pins.readSwitchMin,
             readSwitchMaxPin=const.Actuator.Pins.readSwitchMax
         )
+
+        self.overboardSwitch = DigitalInOut(eval('board.D' + str(const.ROVconst.overboardPin)))
+        self.tensionSwitch = DigitalInOut(eval('board.D' + str(const.ROVconst.tensionPin)))
 
         Thread(daemon=True, target=self.winch.monitorCurrent).start()
         Thread(daemon=True, target=self.winch.rotationReedSwitchTracking).start()
@@ -130,7 +132,7 @@ class ROVwinch:
             except Exception:
                 print("Error input")
                 self.commandsToRun.clear()
-            
+
             time.sleep(const.ROVconst.getCommandSleep)
 
     def turnOffWinchSystem(self):
@@ -139,6 +141,18 @@ class ROVwinch:
 
     def control_winch(self):
         while True:
+
+            # TODO: TEST THIS
+            if self.overboardSwitch.value and self.winch.getDirection() == const.Motor.RETRACT:
+                print("Pulled in!")
+                self.turnOffWinchSystem()
+
+            if self.tensionSwitch.value and self.winch.getDirection() == const.Motor.RETRACT:
+                print("Tensioned")
+                self.turnOffWinchSystem()
+
+            # END TODO
+
             if self.winch.NeedToMoveActuator:
                 self.windActuator.moveCableDistance(self.winch.direction)
                 self.winch.NeedToMoveActuator = False
@@ -156,9 +170,9 @@ class ROVwinch:
                     self.commandsToRun.pop(0)
 
                 except Exception:
-                        print("Exception raised. Turning off winch ... ")
-                        self.turnOffWinchSystem()
-                        print(traceback.format_exc())
+                    print("Exception raised. Turning off winch ... ")
+                    self.turnOffWinchSystem()
+                    print(traceback.format_exc())
 
             out_string = "ROT " + str(self.winch.rotationCounter) + "\r\n"
             self.uart0.write(bytes(out_string, 'utf-8'))

@@ -7,6 +7,9 @@ class ROVconst:
     motorCurrentSleep = 0.1
     actuatorMoveSleep = 0.05
 
+    overboardPin = -1  # TODO: SET ME
+    tensionPin = -1  # TODO: SET ME
+
 
 class Motor:
     class Pins:
@@ -15,7 +18,6 @@ class Motor:
         mot_pot_pin = 16
         rotation_pin = 24
         current_limit = 15
-        overBoardingPin = 0
 
     RETRACT = 1
     EXTEND = 0

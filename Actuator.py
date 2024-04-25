@@ -196,8 +196,6 @@ class Actuator:
 
         while abs(self.currentPulses) <= abs(targetPulses):
 
-            # self.debug(targetPulses)
-
             if self.stationary_counter > 1000:
                 print("stationary limit reached")
                 break
