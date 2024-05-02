@@ -48,6 +48,7 @@ class ROVwinch:
 
         self.commandsToRun = []
 
+
         if mode == 'debug':
             print('COMMAND OPTIONS:')
             print('\t- ROF <ARG1> SPD <arg2> :: move motor (-1 = in | 0 = off | 1 = out) and set speed (<float> '
@@ -72,7 +73,7 @@ class ROVwinch:
 
     def handleInput(self, commandInput):
         if len(commandInput) == 0:
-            self.winch.off()
+            self.turnOffWinchSystem()
             return "Empty command, shutting off winch"
 
         elif commandInput[0] == "ROF":
@@ -154,7 +155,7 @@ class ROVwinch:
             # END TODO
 
             if self.winch.NeedToMoveActuator:
-                self.windActuator.moveCableDistance(self.winch.direction)
+                Thread(daemon=True, target=self.windActuator.moveCableDistance, args=self.winch.direction).start()
                 self.winch.NeedToMoveActuator = False
 
             if len(self.commandsToRun) > 0:

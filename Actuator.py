@@ -196,6 +196,10 @@ class Actuator:
 
         while abs(self.currentPulses) <= abs(targetPulses):
 
+            if self.activeSpeed == 0:
+                print("Winch control loop overwritten")
+                break
+
             if self.stationary_counter > 1000:
                 print("stationary limit reached")
                 break
