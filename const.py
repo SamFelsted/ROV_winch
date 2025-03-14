@@ -18,6 +18,7 @@ class Motor:
         mot_pot_pin = 16
         rotation_pin = 23
         current_limit = 15
+        pwmPin = 12
 
     TAKE = -1
     FEED = 1
@@ -27,6 +28,8 @@ class Motor:
 
     voltageDivider = (100 + 47) / 100
     currentLimit = 15
+
+    pwmFrequency = 3000
 
 
 class Actuator:
