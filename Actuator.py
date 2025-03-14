@@ -81,8 +81,8 @@ class Actuator:
         """
             Algorithm based on debounce.c written by Kenneth A. Kuhn
         """
-        DEBOUNCE_TIME = 0.00000003
-        SAMPLE_FREQUENCY = 100000000
+        DEBOUNCE_TIME = 0.0003
+        SAMPLE_FREQUENCY = 10000
         MAXIMUM = DEBOUNCE_TIME * SAMPLE_FREQUENCY
         integrator = 0
         output = 0

@@ -7,8 +7,8 @@ class ROVconst:
     motorCurrentSleep = 0.1
     actuatorMoveSleep = 0.05
 
-    overboardPin = -1  # TODO: SET ME
-    tensionPin = -1  # TODO: SET ME
+    overboardPin = 8
+    tensionPin = 7
 
 
 class Motor:
@@ -16,11 +16,11 @@ class Motor:
         FWD0_REV1_pin = 26
         ON_OFF_pin = 19
         mot_pot_pin = 16
-        rotation_pin = 24
+        rotation_pin = 23
         current_limit = 15
 
-    RETRACT = 1
-    EXTEND = 0
+    TAKE = -1
+    FEED = 1
 
     readSwitchDelay = 0.250
     readSwitchThreshold = 2  # number of ticks until a read, smaller is more sensitive
@@ -35,8 +35,8 @@ class Actuator:
         directionPin = 21
         feedbackPin = 10
 
-        readSwitchMin = 7
-        readSwitchMax = 8
+        readSwitchMin = 25
+        readSwitchMax = 24
 
     class SetPoints:
         minPulseTicks = 0
