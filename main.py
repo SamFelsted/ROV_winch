@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from ROVwinch import ROVwinch
 import time
 import argparse

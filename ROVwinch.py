@@ -1,7 +1,7 @@
 # pyright: reportMissingImports=false
 import time
 import board
-from digitalio import DigitalInOut, Direction  # GPIO module
+from digitalio import DigitalInOut, Direction, Pull  # GPIO module
 from threading import Thread
 import serial
 import traceback
@@ -20,6 +20,10 @@ class ROVwinch:
         #  note: board LED will stay constant on while attempting to establish connection
         """
         self.mode = mode
+        
+        self.LLC_OE = DigitalInOut(board.D4)
+        self.LLC_OE.direction = Direction.OUTPUT
+        self.LLC_OE.value = 1
 
         self.winch = Motor(
             FWD0_REV1_pin=const.Motor.Pins.FWD0_REV1_pin,
@@ -38,7 +42,11 @@ class ROVwinch:
         )
 
         self.overboardSwitch = DigitalInOut(eval('board.D' + str(const.ROVconst.overboardPin)))
+        self.overboardSwitch.direction = Direction.INPUT
+        self.overboardSwitch.pull = Pull.DOWN
         self.tensionSwitch = DigitalInOut(eval('board.D' + str(const.ROVconst.tensionPin)))
+        self.tensionSwitch.direction = Direction.INPUT
+        self.tensionSwitch.pull = Pull.DOWN
 
         Thread(daemon=True, target=self.winch.monitorCurrent).start()
         Thread(daemon=True, target=self.winch.rotationReedSwitchTracking).start()
@@ -143,19 +151,18 @@ class ROVwinch:
     def control_winch(self):
         while True:
 
-            # TODO: TEST THIS
-            if self.overboardSwitch.value and self.winch.getDirection() == const.Motor.RETRACT:
+            if self.overboardSwitch.value and self.winch.getDirection() == const.Motor.TAKE:
                 print("Pulled in!")
                 self.turnOffWinchSystem()
 
-            if self.tensionSwitch.value and self.winch.getDirection() == const.Motor.RETRACT:
-                print("Tensioned")
+            if self.tensionSwitch.value and self.winch.getDirection() == const.Motor.FEED:
+                print("Line tensioning limit reached")
                 self.turnOffWinchSystem()
 
             # END TODO
 
             if self.winch.NeedToMoveActuator:
-                Thread(daemon=True, target=self.windActuator.moveCableDistance, args=self.winch.direction).start()
+                Thread(daemon=True, target=self.windActuator.moveCableDistance, args=(self.winch.direction,)).start()
                 self.winch.NeedToMoveActuator = False
 
             if len(self.commandsToRun) > 0:
@@ -168,15 +175,19 @@ class ROVwinch:
                         if out_string.split()[0] == "INFO":
                             print(out_string)
 
-                    self.commandsToRun.pop(0)
-
                 except Exception:
-                    print("Exception raised. Turning off winch ... ")
+                    out_string = "INFO Exception raised. Turning off winch."
+                    print(out_string)
                     self.turnOffWinchSystem()
                     print(traceback.format_exc())
 
-            out_string = "ROT " + str(self.winch.rotationCounter) + "\r\n"
-            self.uart0.write(bytes(out_string, 'utf-8'))
+                self.commandsToRun.pop(0)
+
+            else:
+                out_string = "ROT " + str(self.winch.rotationCounter) + "\r\n"
+
+            if self.mode != 'debug':
+                self.uart0.write(bytes(out_string, 'utf-8'))
 
             self.heartbeat.value = not self.heartbeat.value  # toggle LED
             time.sleep(const.ROVconst.controlSleep)

@@ -83,6 +83,7 @@ class Motor:
         print("motor off")
         self.ON.value = 0
         self.servo.angle = 0
+        self.direction = 0
 
     # reed switch for rotation tracking     
     def rotationReedSwitchTracking(self):
@@ -96,7 +97,10 @@ class Motor:
                     readCounts += 1
                     if readCounts >= const.Motor.readSwitchThreshold:
                         self.NeedToMoveActuator = True
-                        self.rotationCounter += 1
+                        if self.direction == 1:
+                            self.rotationCounter += 1
+                        elif self.direction == -1:
+                            self.rotationCounter += -1
                         readCounts = 0
                         lastReadTime = time.time()
 
