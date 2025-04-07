@@ -84,7 +84,7 @@ class Motor:
 
         print("Motor speed set")
         # self.servo.angle = util.clamp(speed, 0, 100) * 270 / 100
-        self.PWMController.setDuty(speed / 100 * 255)
+        self.PWMController.setDuty(int(float(speed) / 100 * 255))
         self.ON.value = 1
 
     def off(self):
