@@ -7,6 +7,7 @@ import adafruit_ads1x15.ads1115 as ADS
 from adafruit_ads1x15.analog_in import AnalogIn
 from gpiozero import AngularServo
 from gpiozero.pins.pigpio import PiGPIOFactory
+from PWMController import PWMController
 
 import const
 import util
@@ -24,6 +25,12 @@ class Motor:
             rotation_pin,
             currentLimit
     ):
+        
+        self.PWMController = PWMController(
+            pwmFrequency = const.Motor.pwmFrequency,
+            pwmPin = const.Motor.Pins.pwmPin,
+            pwmDutyCycle = 0
+        )
 
         self.FWD0_REV1 = DigitalInOut(eval('board.D' + str(FWD0_REV1_pin)))
         self.FWD0_REV1.direction = Direction.OUTPUT
@@ -32,9 +39,9 @@ class Motor:
         self.ON.direction = Direction.OUTPUT
         self.ON.value = 0
 
-        self.servo = AngularServo(mot_pot_pin, min_angle=0, max_angle=270, min_pulse_width=0.0005,
-                                  max_pulse_width=0.0025)
-        self.servo.angle = 0
+        # self.servo = AngularServo(mot_pot_pin, min_angle=0, max_angle=270, min_pulse_width=0.0005,
+        #                           max_pulse_width=0.0025)
+        # self.servo.angle = 0
 
         self.i2c = busio.I2C(board.SCL, board.SDA)
         self.current_sensor = ADS.ADS1115(self.i2c, address=0x48)
@@ -76,13 +83,15 @@ class Motor:
             self.FWD0_REV1.value = 1
 
         print("Motor speed set")
-        self.servo.angle = util.clamp(speed, 0, 100) * 270 / 100
+        # self.servo.angle = util.clamp(speed, 0, 100) * 270 / 100
+        self.PWMController.setDuty(int(float(speed) / 100 * 255))
         self.ON.value = 1
 
     def off(self):
         print("motor off")
         self.ON.value = 0
-        self.servo.angle = 0
+        # self.servo.angle = 0
+        self.PWMController.setDuty(0)
         self.direction = 0
 
     # reed switch for rotation tracking     
