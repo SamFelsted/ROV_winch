@@ -1,33 +1,30 @@
 # pyright: reportMissingImports=false
 
-import pigpio
-import time
-from digitalio import DigitalInOut, Direction, Pull  # GPIO module
-
-
+import pwmio
+import board
 
 class PWMController:
 
     def __init__(
             self,
             pwmFrequency,
-            pwmPin,
+            pwmPinID,
             pwmDutyCycle
     ):
         
         self.pwmFrequency = pwmFrequency
-        self.pwmPin = pwmPin
         self.pwmDutyCycle = pwmDutyCycle
 
-        self.pi = pigpio.pi()
-        # Set PWM on the pin with specified frequency and duty cycle
-        self.pi.set_PWM_frequency(pwmPin, pwmFrequency)          # Look up safe range
-        self.pi.set_PWM_dutycycle(pwmPin, 0)  
-        
+        pin_obj = getattr(board, f'D{pwmPinID}')
+        self.pwmPin = pwmio.PWMOut(pin_obj, frequency=pwmFrequency, duty_cycle=pwmDutyCycle)
 
     def setDuty(self, duty):
         """
-        :param duty (0 to 255)
+        :param duty: 0 to 255
         """
-        self.pi.set_PWM_dutycycle(self.pwmPin, self.pwmDutyCycle)
+        scaled_duty = int(duty * 65535 / 255)
+        self.pwmPin.duty_cycle = scaled_duty
+        print(f"Duty Cycle set to {duty} (scaled: {scaled_duty})")
+
+
             

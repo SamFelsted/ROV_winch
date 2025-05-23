@@ -28,7 +28,7 @@ class Motor:
         
         self.PWMController = PWMController(
             pwmFrequency = const.Motor.pwmFrequency,
-            pwmPin = const.Motor.Pins.pwmPin,
+            pwmPinID = const.Motor.Pins.pwmPin,
             pwmDutyCycle = 0
         )
 
@@ -71,16 +71,18 @@ class Motor:
 
     def set(self, speed, direction):
 
-        self.direction = direction
-
         if direction == 0:  # off
             self.off()
             return
 
         elif direction == 1:  # and encoder_position < max_line_out: # FWD (feed out line)
             self.FWD0_REV1.value = 0
+            print("Forward")
         elif direction == -1:  # REV (take in line)
+            print("Reverse")
             self.FWD0_REV1.value = 1
+
+            self.direction = 0
 
         print("Motor speed set")
         # self.servo.angle = util.clamp(speed, 0, 100) * 270 / 100
